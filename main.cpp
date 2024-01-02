@@ -1,7 +1,7 @@
 #include <iostream>
 
 #define MAX_SIZE 200000
-int n, k, minHeapSize = 0, MaxHeapSize;
+int n, k, minHeapSize = 0, MaxHeapSize = 0;
 using namespace std;
 
 struct omid {
@@ -10,181 +10,186 @@ struct omid {
     bool inMAx;
 } omids[MAX_SIZE];
 
-omid minHeap[MAX_SIZE];
-omid MaxHeap[MAX_SIZE];
+int minHeap[MAX_SIZE];
+int MaxHeap[MAX_SIZE];
+int MaxSum = 0;
+int minSum = 0;
 
-void addMinHeap(omid i);
+void addMinHeap(int i);
 
-void addMaxHeap(omid i);
+void addMaxHeap(int i);
 
 void balance();
 
 int getMedian();
 
-void insert(omid i);
+void insert(int i);
 
-void minHeapifyUp(omid i);
+void minHeapifyUp(int i);
 
-void MaxHeapifyUp(omid i);
+void MaxHeapifyUp(int i);
 
-void MaxHeapifyDown(omid i);
+void MaxHeapifyDown(int i);
 
-void minHeapifyDown(omid i);
+void minHeapifyDown(int i);
 
-void remove(omid i);
+void remove(int i);
 
-void swap(omid *heap, omid i, omid j);
+void swap(int *heap, int i, int j);
 
-long long int getNeededChanges(int median, int j, omid* omids);
+long long int getCost(int median);
 
 
-void removeFromMax(omid i);
+void removeFromMax(int i);
 
-void removeFromMin(omid i);
+void removeFromMin(int i);
 
 int main() {
     //input
     cin >> n >> k;
     //omid* omids = (omid*) malloc(n * sizeof(omid));
-    for (int i = 0; i < n; ++i) cin >> omids[i].amount;
+    for (int i = 0; i < n; ++i) {
+        cin >> omids[i].amount;
+    }
     //build min and max heap and primary fill
 
     for (int i = 0; i < k; ++i) {
-        insert(omids[i]);
+        insert(i);
     }
 
     //iterate calculate and print
-    cout << getNeededChanges(getMedian(), 0, omids);
+    cout << getCost(getMedian()) << " ";
 
     for (int i = 0; i < (n - k); ++i) {
-        insert(omids[k + i]);
-        remove(omids[i]);
-        cout << getNeededChanges(getMedian(), i + 1, omids);
+        insert(k + i);
+        remove(i);
+        cout << getCost(getMedian()) << " ";
     }
     return 0;
 }
 
-void minHeapifyUp(omid i) {
-    if (0 == i.position) return;
-    if (i.amount < minHeap[(i.position - 1) / 2].amount) {
-        swap(minHeap, i, minHeap[(i.position - 1) / 2]);
+void minHeapifyUp(int i) {
+    if (0 == omids[i].position) return;
+    if (omids[i].amount < omids[minHeap[(omids[i].position - 1) / 2]].amount) {
+        swap(minHeap, i, minHeap[(omids[i].position - 1) / 2]);
         minHeapifyUp(i);
     }
 }
 
-void MaxHeapifyUp(omid i) {
-    if (0 == i.position) return;
-    if (i.amount > MaxHeap[(i.position - 1) / 2].amount) {
-        swap(MaxHeap, i, MaxHeap[(i.position - 1) / 2]);
+void MaxHeapifyUp(int i) {
+    if (0 == omids[i].position) return;
+    if (omids[i].amount > omids[MaxHeap[(omids[i].position - 1) / 2]].amount) {
+        swap(MaxHeap, i, MaxHeap[(omids[i].position - 1) / 2]);
         MaxHeapifyUp(i);
     }
 }
 
-void MaxHeapifyDown(omid i) {
-    int pos = i.position;
+void MaxHeapifyDown(int i) {
+    int pos = omids[i].position;
     int j = pos * 2 + 1;
-    if (j > MaxHeapSize) return;
+    if (j >= MaxHeapSize) return;
     if (j + 1 == MaxHeapSize);
-    else if (MaxHeap[j].amount < MaxHeap[j + 1].amount) j += 1;
-    if (MaxHeap[j].amount > MaxHeap[i.position].amount) {
+    else if (omids[MaxHeap[j]].amount < omids[MaxHeap[j + 1]].amount) j += 1;
+    if (omids[MaxHeap[j]].amount > omids[i].amount) {
         swap(MaxHeap, i, MaxHeap[j]);
         MaxHeapifyDown(i);
     }
 }
 
-void minHeapifyDown(omid i) {
-    int pos = i.position;
+void minHeapifyDown(int i) {
+    int pos = omids[i].position;
     int j = pos * 2 + 1;
-    if (j > minHeapSize) return;
+    if (j >= minHeapSize) return;
     if (j + 1 == minHeapSize);
-    else if (minHeap[j].amount > minHeap[j + 1].amount) j += 1;
-    if (minHeap[j].amount < minHeap[i.position].amount) {
+    else if (omids[minHeap[j]].amount > omids[minHeap[j + 1]].amount) j += 1;
+    if (omids[minHeap[j]].amount < omids[i].amount) {
         swap(minHeap, i, minHeap[j]);
         minHeapifyDown(i);
     }
 }
 
-void remove(omid i) {
-    if (i.inMAx)
+void remove(int i) {
+    if (omids[i].inMAx)
         removeFromMax(i);
     else
         removeFromMin(i);
     balance();
 }
 
-void removeFromMin(omid i) {
+void removeFromMin(int i) {
+    minSum -= omids[i].amount;
     minHeapSize -= 1;
-    omid heydari = minHeap[minHeapSize];
-    swap(minHeap, i, heydari);
-    minHeapifyUp(heydari);
-    minHeapifyDown(heydari);
+    int c = minHeap[minHeapSize];
+    swap(minHeap, i, minHeap[minHeapSize]);
+    if (omids[c].amount < omids[minHeap[(omids[c].position - 1) / 2]].amount)
+        minHeapifyUp(c);
+    else
+        minHeapifyDown(c);
 }
 
-void removeFromMax(omid i) {
+void removeFromMax(int i) {
+    MaxSum -= omids[i].amount;
     MaxHeapSize -= 1;
-    omid heydari = MaxHeap[MaxHeapSize];
-    swap(MaxHeap, i, heydari);
-    MaxHeapifyUp(heydari);
-    MaxHeapifyDown(heydari);
+    int c = MaxHeap[MaxHeapSize];
+    swap(MaxHeap, i, MaxHeap[MaxHeapSize]);
+    if (omids[c].amount > omids[MaxHeap[(omids[c].position - 1) / 2]].amount)
+        MaxHeapifyUp(c);
+    else
+        MaxHeapifyDown(c);
 }
 
-void swap(omid *heap, omid i, omid j) { // swap place of two omid and update position
-    heap[i.position] = j;
-    heap[j.position] = i;
-    int pos = i.position;
-    i.position = j.position;
-    j.position = pos;
+void swap(int *heap, int i, int j) { // swap place of two omid and update position
+    heap[omids[i].position] = j;
+    heap[omids[j].position] = i;
+    int pos = omids[i].position;
+    omids[i].position = omids[j].position;
+    omids[j].position = pos;
 }
 
-long long int getNeededChanges(int median, int j, omid *omids) { // calculate Needed Changes
-    long long int sum = 0;
-    for (int i = j; i < j + k; ++i) sum += abs(omids[i].amount - median);
-    return sum;
+long long int getCost(int median) { // calculate Needed Changes
+    return -(MaxSum - (MaxHeapSize - minHeapSize) * median - minSum);
 }
 
-void addMaxHeap(omid i) {
+void addMaxHeap(int i) {
+    MaxSum += omids[i].amount;
     MaxHeap[MaxHeapSize] = i;
-    i.inMAx = true;
-    i.position = MaxHeapSize;
-    MaxHeapSize = MaxHeapSize + 1;
+    omids[i].inMAx = true;
+    omids[i].position = MaxHeapSize++;
     MaxHeapifyUp(i);
 }
 
-void addMinHeap(omid i) {
+void addMinHeap(int i) {
+    minSum += omids[i].amount;
     minHeap[minHeapSize] = i;
-    i.inMAx = false;
-    i.position = minHeapSize;
-    minHeapSize = minHeapSize + 1;
+    omids[i].inMAx = false;
+    omids[i].position = minHeapSize++;
     minHeapifyUp(i);
 }
 
 void balance() {
     if (minHeapSize < MaxHeapSize - 1) {
-        omid heydari = MaxHeap[0];
-        remove(heydari);
-        addMinHeap(heydari);
+        removeFromMax(MaxHeap[0]);
+        addMinHeap(MaxHeap[MaxHeapSize]);
     } else if (MaxHeapSize < minHeapSize - 1) {
-        omid heydari = minHeap[0];
-        remove(heydari);
-        addMaxHeap(heydari);
+        removeFromMin(minHeap[0]);
+        addMaxHeap(minHeap[minHeapSize]);
     }
 }
 
 int getMedian() {
     if (k == 1) {
         if (minHeapSize == 0)
-            return MaxHeap[0].amount;
-        else return minHeap[0].amount;
+            return omids[MaxHeap[0]].amount;
+        else return omids[minHeap[0]].amount;
     }
-    if (MaxHeapSize <= minHeapSize) return minHeap[0].amount;
-    return MaxHeap[0].amount;
+    if (MaxHeapSize <= minHeapSize) return omids[minHeap[0]].amount;
+    return omids[MaxHeap[0]].amount;
 }
 
-void insert(omid i) {//input is omid
+void insert(int i) {//input is omid
     if (minHeapSize == 0) addMinHeap(i);
-    else if (i.amount > minHeap[0].amount)
+    else if (omids[i].amount > omids[minHeap[0]].amount)
         addMinHeap(i);
     else addMaxHeap(i);
     balance();
 }
-
