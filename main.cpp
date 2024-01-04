@@ -2,7 +2,6 @@
 
 #define MAX_SIZE 200000
 int n, k, minHeapSize = 0, MaxHeapSize = 0;
-using namespace std;
 
 struct omid {
     int amount;
@@ -12,8 +11,7 @@ struct omid {
 
 int minHeap[MAX_SIZE];
 int MaxHeap[MAX_SIZE];
-int MaxSum = 0;
-int minSum = 0;
+long long MaxSum = 0, minSum = 0;
 
 void addMinHeap(int i);
 
@@ -46,10 +44,10 @@ void removeFromMin(int i);
 
 int main() {
     //input
-    cin >> n >> k;
+    std::cin >> n >> k;
     //omid* omids = (omid*) malloc(n * sizeof(omid));
     for (int i = 0; i < n; ++i) {
-        cin >> omids[i].amount;
+        std::cin >> omids[i].amount;
     }
     //build min and max heap and primary fill
 
@@ -58,12 +56,12 @@ int main() {
     }
 
     //iterate calculate and print
-    cout << getCost(getMedian()) << " ";
+    std::cout << getCost(getMedian()) << " ";
 
     for (int i = 0; i < (n - k); ++i) {
         insert(k + i);
         remove(i);
-        cout << getCost(getMedian()) << " ";
+        std::cout << getCost(getMedian()) << " ";
     }
     return 0;
 }
@@ -147,7 +145,7 @@ void swap(int *heap, int i, int j) { // swap place of two omid and update positi
 }
 
 long long int getCost(int median) { // calculate Needed Changes
-    return -(MaxSum - (MaxHeapSize - minHeapSize) * median - minSum);
+    return -(MaxSum - ((long long )MaxHeapSize - (long long )minHeapSize) * (long long )median - minSum);
 }
 
 void addMaxHeap(int i) {
